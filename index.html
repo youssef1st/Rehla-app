@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سجل يومي</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyNCIgZmlsbD0iIzNENjY1NiIvPgo8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSIzNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQzk5QTNEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1kYXNoYXJyYXk9IjQgNSIvPgo8cGF0aCBkPSJNMzUgNTEgTDQ1IDYxIEw2NyAzOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRjZGMUU3IiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyNCIgZmlsbD0iIzNENjY1NiIvPgo8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSIzNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQzk5QTNEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1kYXNoYXJyYXk9IjQgNSIvPgo8cGF0aCBkPSJNMzUgNTEgTDQ1IDYxIEw2NyAzOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRjZGMUU3IiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Markazi+Text:wght@500;600;700&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --paper:#F6F1E7;
+    --paper-2:#EFE7D6;
+    --ink:#2B2620;
+    --ink-soft:#6B6055;
+    --forest:#3D6656;
+    --forest-deep:#284338;
+    --gold:#C99A3D;
+    --brick:#A94438;
+    --line:#DCCFB2;
+    --card:#FFFDF8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(43,38,32,0.05) 1px, transparent 0);
+    background-size: 22px 22px;
+    color:var(--ink);
+    font-family:'Cairo', sans-serif;
+    min-height:100vh;
+    padding-bottom:40px;
+  }
+  h1,h2,h3, .display{ font-family:'Markazi Text', serif; }
+  .wrap{ max-width:480px; margin:0 auto; padding:18px 16px 90px; position:relative; min-height:100vh; }
+
+  /* ---------- Top bar ---------- */
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-badge{
+    width:44px; height:44px; border-radius:50%; overflow:hidden;
+    background:var(--forest); color:#fff; display:flex; align-items:center; justify-content:center;
+    font-family:'Markazi Text', serif; font-size:22px; font-weight:700;
+    box-shadow: 0 3px 0 var(--forest-deep);
+  }
+  .brand-badge img{ width:100%; height:100%; object-fit:cover; }
+  .brand-title{ font-family:'Markazi Text', serif; font-size:26px; font-weight:700; line-height:1; }
+  .brand-sub{ font-size:11px; color:var(--ink-soft); margin-top:2px; }
+  .role-pill{
+    display:flex; background:var(--paper-2); border-radius:999px; padding:3px; gap:2px;
+    border:1px solid var(--line);
+  }
+  .role-pill button{
+    border:none; background:transparent; padding:6px 12px; border-radius:999px;
+    font-family:'Cairo'; font-size:12px; font-weight:700; color:var(--ink-soft); cursor:pointer;
+    transition:.2s;
+  }
+  .role-pill button.active{ background:var(--ink); color:#fff; }
+  .settings-gear{
+    background:var(--paper-2); border:none; color:var(--ink-soft); opacity:.65; font-size:16px;
+    cursor:pointer; padding:8px 10px; margin-left:6px; border-radius:9px;
+  }
+  .settings-gear:hover{ opacity:1; }
+  .manage-list{ display:flex; flex-direction:column; gap:8px; max-height:50vh; overflow-y:auto; margin-bottom:6px; }
+  .manage-row{
+    display:flex; align-items:center; justify-content:space-between; background:var(--card);
+    border:1px solid var(--line); border-radius:12px; padding:10px 12px;
+  }
+  .manage-title{ font-size:13.5px; font-weight:700; }
+  .manage-sub{ font-size:11px; color:var(--ink-soft); margin-top:2px; }
+  .manage-info{ flex:1; overflow:hidden; padding-left:8px; }
+  .manage-actions{ display:flex; gap:6px; }
+  .mini-btn{
+    border:none; background:var(--paper-2); width:32px; height:32px; border-radius:9px; font-size:14px; cursor:pointer;
+  }
+  .mini-btn.danger{ background:#FBEAE7; }
+  .pw-error{ color:var(--brick); font-size:12px; margin:-6px 0 12px; display:none; }
+
+  /* ---------- Role select screen ---------- */
+  .role-screen{ padding-top:40px; text-align:center; }
+  .role-screen .display{ font-size:34px; margin-bottom:6px; }
+  .role-screen p.lead{ color:var(--ink-soft); font-size:14px; margin-bottom:30px; }
+  .role-cards{ display:flex; flex-direction:column; gap:14px; }
+  .role-card{
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:20px; text-align:right; cursor:pointer; transition:.15s;
+    display:flex; align-items:center; gap:14px;
+    box-shadow: 0 2px 0 var(--line);
+  }
+  .role-card:hover{ transform:translateY(-2px); border-color:var(--forest); }
+  .role-card .emoji{ font-size:32px; }
+  .role-card h3{ font-size:19px; margin-bottom:3px; font-family:'Cairo'; font-weight:800; }
+  .role-card p{ font-size:12.5px; color:var(--ink-soft); }
+
+  /* ---------- Day ticket header ---------- */
+  .ticket{
+    background:var(--card); border-radius:18px; border:1px solid var(--line);
+    box-shadow:0 2px 0 var(--line);
+    margin-bottom:18px; overflow:hidden;
+  }
+  .ticket-top{ padding:16px 18px 12px; display:flex; align-items:center; justify-content:space-between; }
+  .ticket-top .display{ font-size:24px; font-weight:700; }
+  .ticket-date{ font-size:11px; color:var(--ink-soft); }
+  .perforation{
+    position:relative; height:0; border-top:2px dashed var(--line); margin:0 14px;
+  }
+  .perforation::before, .perforation::after{
+    content:''; position:absolute; top:-9px; width:18px; height:18px; border-radius:50%; background:var(--paper);
+  }
+  .perforation::before{ right:-9px; }
+  .perforation::after{ left:-9px; }
+  .day-tabs{ display:flex; gap:8px; padding:12px 14px 14px; overflow-x:auto; }
+  .day-tabs button{
+    flex:0 0 auto; border:1px solid var(--line); background:var(--paper-2); color:var(--ink);
+    font-family:'Cairo'; font-weight:700; font-size:12.5px; padding:7px 14px; border-radius:999px; cursor:pointer;
+  }
+  .day-tabs button.active{ background:var(--forest); border-color:var(--forest); color:#fff; }
+
+  /* ---------- Timeline ---------- */
+  .timeline{ position:relative; padding-right:26px; }
+  .timeline::before{
+    content:''; position:absolute; right:9px; top:6px; bottom:6px; width:2px;
+    background:repeating-linear-gradient(to bottom, var(--line) 0 6px, transparent 6px 11px);
+  }
+  .entry{ position:relative; margin-bottom:16px; }
+  .entry-node{
+    position:absolute; right:-26px; top:6px; width:20px; height:20px; border-radius:50%;
+    background:var(--forest); border:3px solid var(--paper); box-shadow:0 0 0 1px var(--forest);
+    display:flex; align-items:center; justify-content:center; font-size:10px;
+  }
+  .entry-node.active{ background:var(--gold); box-shadow:0 0 0 1px var(--gold); animation:pulse 1.6s infinite; }
+  .entry-node.request{ background:var(--brick); box-shadow:0 0 0 1px var(--brick); }
+  @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(201,154,61,.5);} 70%{ box-shadow:0 0 0 8px rgba(201,154,61,0);} 100%{ box-shadow:0 0 0 0 rgba(201,154,61,0);} }
+
+  .entry-card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 14px;
+    box-shadow:0 2px 0 var(--line);
+  }
+  .entry-card.request{ border-color:#E4B7AE; background:#FBF1EE; }
+  .entry-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .entry-title{ font-weight:800; font-size:15px; }
+  .stamp{
+    font-size:10.5px; font-weight:700; color:var(--forest-deep); background:#E7EFE9;
+    padding:3px 9px; border-radius:999px; border:1px solid #C9DBCF; white-space:nowrap;
+  }
+  .stamp.pending{ background:#FBF1DC; color:#8A6A1E; border-color:#EBD9A6; }
+  .stamp.request{ background:#FBEAE7; color:var(--brick); border-color:#EFC7C0; }
+  .entry-note{ font-size:13px; color:var(--ink); line-height:1.6; margin-top:4px; }
+  .entry-media{ margin-top:9px; border-radius:10px; overflow:hidden; max-height:220px; }
+  .entry-media img, .entry-media video{ width:100%; display:block; max-height:220px; object-fit:cover; }
+  .entry-foot{ display:flex; align-items:center; justify-content:space-between; margin-top:10px; }
+  .time-range{ font-size:11px; color:var(--ink-soft); }
+  .stop-btn{
+    background:var(--brick); color:#fff; border:none; padding:7px 16px; border-radius:999px;
+    font-family:'Cairo'; font-weight:800; font-size:12px; cursor:pointer;
+  }
+  .done-btn{
+    background:var(--forest); color:#fff; border:none; padding:6px 14px; border-radius:999px;
+    font-family:'Cairo'; font-weight:800; font-size:11.5px; cursor:pointer;
+  }
+  .done-btn.done{ background:#C9DBCF; color:var(--forest-deep); }
+
+  .empty{ text-align:center; padding:40px 10px; color:var(--ink-soft); }
+  .empty .e{ font-size:36px; margin-bottom:10px; }
+  .empty p{ font-size:13px; }
+
+  /* ---------- FAB ---------- */
+  .fab-row{ position:fixed; bottom:22px; left:0; right:0; display:flex; justify-content:center; gap:12px; z-index:20; }
+  .fab{
+    background:var(--forest); color:#fff; border:none; border-radius:999px; padding:14px 26px;
+    font-family:'Cairo'; font-weight:800; font-size:14.5px; display:flex; align-items:center; gap:8px;
+    box-shadow:0 6px 16px rgba(40,67,56,.35); cursor:pointer;
+  }
+  .fab.secondary{ background:var(--brick); box-shadow:0 6px 16px rgba(169,68,56,.35); }
+
+  /* ---------- Bottom sheet ---------- */
+  .sheet-overlay{
+    position:fixed; inset:0; background:rgba(43,38,32,.45); display:none; align-items:flex-end; justify-content:center; z-index:50;
+  }
+  .sheet-overlay.open{ display:flex; }
+  .sheet{
+    background:var(--paper); width:100%; max-width:480px; border-radius:22px 22px 0 0; padding:20px 18px 26px;
+    max-height:88vh; overflow-y:auto; animation:slideup .22s ease-out;
+  }
+  @keyframes slideup{ from{ transform:translateY(30px); opacity:0;} to{ transform:translateY(0); opacity:1;} }
+  .sheet-handle{ width:40px; height:4px; background:var(--line); border-radius:99px; margin:0 auto 16px; }
+  .sheet h3{ font-family:'Markazi Text'; font-size:24px; margin-bottom:14px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }
+  .field input[type=text], .field textarea, .field input[type=time]{
+    width:100%; border:1px solid var(--line); background:var(--card); border-radius:10px; padding:10px 12px;
+    font-family:'Cairo'; font-size:14px; color:var(--ink); resize:none;
+  }
+  .field textarea{ min-height:70px; }
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{
+    border:1px solid var(--line); background:var(--card); color:var(--ink-soft);
+    font-family:'Cairo'; font-weight:700; font-size:12px; padding:7px 13px; border-radius:999px; cursor:pointer;
+  }
+  .chip.active{ background:var(--forest); border-color:var(--forest); color:#fff; }
+  .person-badge{
+    display:inline-block; font-size:10.5px; font-weight:700; color:var(--forest-deep); background:#E7EFE9;
+    border:1px solid #C9DBCF; padding:2px 8px; border-radius:999px; margin-top:6px;
+  }
+  .storage-banner{
+    background:#FBEAE7; border:1px solid #E4B7AE; color:var(--brick); font-size:11.5px; font-weight:700;
+    border-radius:12px; padding:10px 14px; margin-bottom:14px; line-height:1.6; text-align:center;
+  }
+  .notice-banner{
+    background:#FBF1DC; border:1px solid #EBD9A6; color:#8A6A1E; font-size:12px; font-weight:700;
+    border-radius:12px; padding:9px 14px; margin-bottom:10px; text-align:center;
+  }
+  .notice-banner.soft{ background:var(--paper-2); border-color:var(--line); color:var(--ink-soft); font-weight:600; }
+  .watch-switch{ display:flex; gap:8px; margin-bottom:14px; }
+  .watch-switch button{
+    flex:1; border:1px solid var(--line); background:var(--card); color:var(--ink);
+    font-family:'Cairo'; font-weight:700; font-size:13px; padding:10px; border-radius:12px; cursor:pointer;
+  }
+  .watch-switch button.active{ background:var(--forest); border-color:var(--forest); color:#fff; }
+  .time-row{ display:flex; gap:10px; }
+  .time-row .field{ flex:1; }
+  .media-pick{
+    border:1.5px dashed var(--line); border-radius:12px; padding:16px; text-align:center; cursor:pointer;
+    font-size:12.5px; color:var(--ink-soft); background:var(--card);
+  }
+  .media-pick.has-media{ padding:0; border-style:solid; overflow:hidden; }
+  .media-pick img, .media-pick video{ width:100%; max-height:180px; object-fit:cover; display:block; }
+  .sheet-actions{ display:flex; gap:10px; margin-top:6px; }
+  .btn{
+    flex:1; border:none; border-radius:12px; padding:13px; font-family:'Cairo'; font-weight:800; font-size:14px; cursor:pointer;
+  }
+  .btn.primary{ background:var(--forest); color:#fff; }
+  .btn.ghost{ background:var(--paper-2); color:var(--ink); }
+
+  .note-mini{ font-size:11px; color:var(--ink-soft); text-align:center; margin-top:16px; line-height:1.7; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div style="padding-top:100px; text-align:center; color:var(--ink-soft); font-size:13px;">جاري التحميل...</div>
+</div>
+
+<div class="sheet-overlay" id="sheetOverlay">
+  <div class="sheet" id="sheetContent"></div>
+</div>
+
+<script>
+/* ---------------- State (in-memory only) ---------------- */
+const state = {
+  role: null,          // 'youssef' | 'hana' | 'mom'
+  entries: [],          // {id, dateKey, title, note, person, loggedBy, mediaType, mediaData, start, end}
+  requests: [],          // {id, dateKey, text, from, to, targetKid, mediaType, mediaData, done}
+  dayOrder: [],          // array of dateKey in order of first appearance
+  dayMeta: {},          // { dateKey: {date: Date} } for display purposes
+  activeDayKey: null,
+  pendingMedia: null,      // {type,data} while composing
+  momWatching: null,      // 'youssef' | 'hana' | 'all'
+  lastSeen: { youssef:null, hana:null, mom:null },
+  loaded: false
+};
+
+const STORAGE_KEY = 'family-log-akqhiyfptb';
+const ARABIC_ORDINALS = ['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'];
+
+function todayKey(){
+  return new Date().toDateString();
+}
+function ensureDay(key, date){
+  if(!state.dayOrder.includes(key)){
+    state.dayOrder.push(key);
+    state.dayMeta[key] = { date: date || (isNaN(new Date(key)) ? new Date() : new Date(key)) };
+  }
+  if(!state.activeDayKey) state.activeDayKey = key;
+}
+function dayLabel(key){
+  const idx = state.dayOrder.indexOf(key);
+  return 'اليوم ' + (ARABIC_ORDINALS[idx] || (idx+1));
+}
+function dayDate(key){
+  return (state.dayMeta[key] && state.dayMeta[key].date) || new Date();
+}
+function addNewDayManually(){
+  const key = 'day-' + (state.dayOrder.length+1) + '-' + Date.now();
+  ensureDay(key, new Date());
+  state.activeDayKey = key;
+  saveState(); render();
+}
+function fmtTime(d){
+  return d.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+}
+function esc(s){
+  const d = document.createElement('div'); d.innerText = s || ''; return d.innerHTML;
+}
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+/* ---------------- Rendering ---------------- */
+function render(){
+  const app = document.getElementById('app');
+  if(!state.role){ app.innerHTML = roleScreen(); attachRoleEvents(); return; }
+  const isKid = state.role==='youssef' || state.role==='hana';
+  app.innerHTML = topbar() + (isKid ? kidScreen() : momScreen());
+  attachCommonEvents();
+  if(isKid) attachKidEvents(); else attachMomEvents();
+}
+
+function topbar(){
+  return `
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-badge"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyNCIgZmlsbD0iIzNENjY1NiIvPgo8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSIzNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQzk5QTNEIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1kYXNoYXJyYXk9IjQgNSIvPgo8cGF0aCBkPSJNMzUgNTEgTDQ1IDYxIEw2NyAzOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRjZGMUU3IiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=" alt="أيقونة"/></div>
+      <div>
+        <div class="brand-title">سجل يومي</div>
+        <div class="brand-sub">تسجيل ومتابعة يومية</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center;">
+      <button class="settings-gear" id="settingsBtn" title="">⚙</button>
+      <div class="role-pill">
+        <button data-role="youssef" class="${state.role==='youssef'?'active':''}">يوسف</button>
+        <button data-role="hana" class="${state.role==='hana'?'active':''}">هنا</button>
+        <button data-role="mom" class="${state.role==='mom'?'active':''}">ماما</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function roleScreen(){
+  return `
+  <div class="role-screen">
+    <div class="display">إنت مين النهارده؟ 🌿</div>
+    <p class="lead">اختار اسمك عشان نظبط لك الشاشة المناسبة</p>
+    <div class="role-cards">
+      <div class="role-card" data-role="youssef">
+        <div class="emoji">🧒</div>
+        <div><h3>يوسف</h3><p>سجل كل حاجة بتعملها بالصورة أو الفيديو أو كلمتين</p></div>
+      </div>
+      <div class="role-card" data-role="hana">
+        <div class="emoji">🧑</div>
+        <div><h3>هنا</h3><p>سجلي كل حاجة بتعمليها بالصورة أو الفيديو أو كلمتين</p></div>
+      </div>
+      <div class="role-card" data-role="mom">
+        <div class="emoji">👀</div>
+        <div><h3>ماما بتراقب من بعيد</h3><p>تشوف يوسف وهنا بيعملوا إيه، وهل اتقدم فاكهة أو أي طلب ولا لسه، وتقدر تبعت طلب زي "قدموا فواكه"</p></div>
+      </div>
+    </div>
+    <p class="note-mini">كل حاجة بتتحفظ لحظيًا وبتوصل لماما فورًا بمجرد ما تفتح نفس اللينك، حتى لو قفلتوا الصفحة أو الموبايل خالص.</p>
+    <p class="note-mini" style="color:var(--brick);">تنبيه: أي حد يفتح نفس اللينك هيشوف كل الصور والفيديوهات، فابعتوا الرابط لماما وبس، ومتنشروش الرابط في أي مكان عام.</p>
+  </div>`;
+}
+
+function markSeen(role){
+  if(!state.lastSeen) state.lastSeen = {};
+  state.lastSeen[role] = new Date().toISOString();
+  saveState();
+}
+
+function attachRoleEvents(){
+  document.querySelectorAll('.role-card').forEach(el=>{
+    el.addEventListener('click', ()=>{ state.role = el.dataset.role; markSeen(state.role); render(); });
+  });
+}
+function attachCommonEvents(){
+  document.querySelectorAll('.role-pill button').forEach(el=>{
+    el.addEventListener('click', ()=>{ state.role = el.dataset.role; markSeen(state.role); render(); });
+  });
+  const gear = document.getElementById('settingsBtn');
+  if(gear) gear.addEventListener('click', openSettingsSheet);
+}
+
+
+/* ---------------- Kid screen ---------------- */
+function storageBanner(){
+  if(state.storageOK === false){
+    return `<div class="storage-banner">⚠️ الحفظ التلقائي مش شغال — تأكد إنك عبيت بيانات Firebase صح في أول السكريبت، وإن الـ Database rules فاتحة، وإن النت شغال</div>`;
+  }
+  return '';
+}
+
+function kidScreen(){
+  ensureDay(todayKey());
+  const key = state.activeDayKey;
+  const dayEntries = state.entries.filter(e=>e.dateKey===key);
+  const dayRequests = state.requests.filter(r=>r.dateKey===key && (!r.targetKid || r.targetKid==='all' || r.targetKid===state.role));
+  const items = [...dayEntries.map(e=>({...e,_type:'entry'})), ...dayRequests.map(r=>({...r,_type:'request'}))]
+      .sort((a,b)=> (a.start||a.createdAt) - (b.start||b.createdAt));
+
+  const pendingCount = state.requests.filter(r=>!r.done && (!r.targetKid || r.targetKid==='all' || r.targetKid===state.role)).length;
+  const momSeen = state.lastSeen && state.lastSeen.mom;
+
+  return `
+  ${storageBanner()}
+  ${pendingCount ? `<div class="notice-banner">📬 عندك ${pendingCount===1?'طلب جديد':'('+pendingCount+') طلبات'} من ماما لسه ماخلصتوش</div>` : ''}
+  ${momSeen ? `<div class="notice-banner soft">👀 آخر ظهور لماما: ${fmtTime(new Date(momSeen))}</div>` : ''}
+  <div class="ticket">
+    <div class="ticket-top">
+      <div class="display">${dayLabel(key)}</div>
+      <div class="ticket-date">${dayDate(key).toLocaleDateString('ar-EG',{weekday:'long', day:'numeric', month:'long'})}</div>
+    </div>
+    <div class="perforation"></div>
+    <div class="day-tabs">
+      ${state.dayOrder.map(k=>`<button data-day="${k}" class="${k===key?'active':''}">${dayLabel(k)}</button>`).join('')}
+      <button id="newDayBtn" style="border-style:dashed;">+ يوم جديد</button>
+    </div>
+  </div>
+  ${items.length ? `<div class="timeline">${items.map(it=>renderKidItem(it,false)).join('')}</div>` :
+    `<div class="empty"><div class="e">🌤️</div><p>لسه معملناش حاجة النهارده — دوس + وابدأ أول نشاط</p></div>`}
+  <div class="fab-row">
+    <button class="fab" id="addEntryBtn">＋ نشاط جديد</button>
+  </div>`;
+}
+
+function renderKidItem(item, isObserver){
+  if(item._type==='request'){
+    const targetLabel = item.targetKid==='youssef' ? '(ليوسف)' : item.targetKid==='hana' ? '(لهنا)' : '';
+    return `
+    <div class="entry">
+      <div class="entry-node request">💌</div>
+      <div class="entry-card request">
+        <div class="entry-head">
+          <div class="entry-title">طلب من ماما ${targetLabel}</div>
+          <span class="stamp request">${item.to && item.from ? (item.from+' – '+item.to) : fmtTime(new Date(item.createdAt))}</span>
+        </div>
+        <div class="entry-note">${esc(item.text)}</div>
+        ${item.mediaData ? mediaBlock(item.mediaType, item.mediaData) : ''}
+        <div class="entry-foot">
+          <span class="time-range"></span>
+          <button class="done-btn ${item.done?'done':''}" data-req="${item.id}">${item.done? '✓ اتعمل' : 'حصل ✅'}</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  const active = !item.end;
+  const personLabel = item.person==='little' ? '👧 الأخت الصغيرة' : item.person==='big' ? '🧒‍♀️ الأخت الكبيرة' : '';
+  const loggedByLabel = isObserver ? (item.loggedBy==='youssef' ? 'سجّلها يوسف' : item.loggedBy==='hana' ? 'سجّلتها هنا' : '') : '';
+  return `
+  <div class="entry">
+    <div class="entry-node ${active?'active':''}">${active?'':'✓'}</div>
+    <div class="entry-card">
+      <div class="entry-head">
+        <div class="entry-title">${esc(item.title)}</div>
+        <span class="stamp ${active?'pending':''}">${active? 'شغالين دلوقتي' : 'خلصنا'}</span>
+      </div>
+      ${personLabel || loggedByLabel ? `<div>${personLabel?`<span class="person-badge">${personLabel}</span>`:''} ${loggedByLabel?`<span class="person-badge">${loggedByLabel}</span>`:''}</div>` : ''}
+      ${item.note ? `<div class="entry-note">${esc(item.note)}</div>` : ''}
+      ${item.mediaData ? mediaBlock(item.mediaType, item.mediaData) : ''}
+      <div class="entry-foot">
+        <span class="time-range">${active ? 'بدأنا الساعة '+fmtTime(item.start) : 'من '+fmtTime(item.start)+' لـ '+fmtTime(item.end)+' ('+durationText(item.start,item.end)+')'}</span>
+        ${(active && !isObserver) ? `<button class="stop-btn" data-stop="${item.id}">إيقاف ⏹</button>` : (active ? `<span class="stamp pending">لسه شغالين</span>` : '')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function mediaBlock(type, data){
+  if(type==='video') return `<div class="entry-media"><video src="${data}" controls></video></div>`;
+  return `<div class="entry-media"><img src="${data}"/></div>`;
+}
+function durationText(start,end){
+  const mins = Math.round((end-start)/60000);
+  if(mins < 1) return 'أقل من دقيقة';
+  if(mins < 60) return mins+' دقيقة';
+  const h = Math.floor(mins/60), m = mins%60;
+  return h+' ساعة'+(m? ' و'+m+' دقيقة':'');
+}
+
+function attachKidEvents(){
+  document.querySelectorAll('.day-tabs [data-day]').forEach(el=>{
+    el.addEventListener('click', ()=>{ state.activeDayKey = el.dataset.day; render(); });
+  });
+  document.querySelectorAll('[data-stop]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const e = state.entries.find(x=>x.id===el.dataset.stop);
+      if(e){ e.end = new Date(); saveState(); render(); }
+    });
+  });
+  document.querySelectorAll('[data-req]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const r = state.requests.find(x=>x.id===el.dataset.req);
+      if(r){ r.done = !r.done; saveState(); render(); }
+    });
+  });
+  const addBtn = document.getElementById('addEntryBtn');
+  if(addBtn) addBtn.addEventListener('click', openAddEntrySheet);
+  const newDayBtn = document.getElementById('newDayBtn');
+  if(newDayBtn) newDayBtn.addEventListener('click', addNewDayManually);
+}
+
+/* ---------------- Add entry sheet ---------------- */
+function openAddEntrySheet(){
+  state.pendingMedia = null;
+  state.pendingPerson = null;
+  document.getElementById('sheetContent').innerHTML = `
+    <div class="sheet-handle"></div>
+    <h3>نشاط جديد 🌱</h3>
+    <div class="field">
+      <label>اسم النشاط</label>
+      <input type="text" id="fTitle" placeholder="مثلا: الاستحمام، الفطار، المذاكرة..." />
+    </div>
+    <div class="field">
+      <label>بتاع مين؟ (اختياري)</label>
+      <div class="chip-row" id="personChips">
+        <button type="button" class="chip active" data-person="">عام</button>
+        <button type="button" class="chip" data-person="little">أختي الصغيرة</button>
+        <button type="button" class="chip" data-person="big">أختي الكبيرة</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>تفاصيل (اختياري)</label>
+      <textarea id="fNote" placeholder="اكتب أي كلام حابب تضيفه..."></textarea>
+    </div>
+    <div class="field">
+      <label>صورة أو فيديو (اختياري)</label>
+      <div class="media-pick" id="mediaPick">📸 اضغط لإضافة صورة أو فيديو كإثبات</div>
+      <input type="file" id="fMedia" accept="image/*,video/*" style="display:none" />
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="cancelSheet">إلغاء</button>
+      <button class="btn primary" id="saveEntry">ابدأ النشاط ▶</button>
+    </div>
+  `;
+  openSheet();
+  wireMediaPick();
+  document.querySelectorAll('#personChips .chip').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      document.querySelectorAll('#personChips .chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      state.pendingPerson = c.dataset.person || null;
+    });
+  });
+  document.getElementById('cancelSheet').addEventListener('click', closeSheet);
+  document.getElementById('saveEntry').addEventListener('click', ()=>{
+    const title = document.getElementById('fTitle').value.trim();
+    if(!title){ document.getElementById('fTitle').focus(); return; }
+    const note = document.getElementById('fNote').value.trim();
+    const key = state.activeDayKey || todayKey();
+    ensureDay(key);
+    state.entries.push({
+      id: uid(), dateKey:key, title, note, person: state.pendingPerson || null, loggedBy: state.role,
+      mediaType: state.pendingMedia?.type || null,
+      mediaData: state.pendingMedia?.data || null,
+      start: new Date(), end: null
+    });
+    closeSheet(); saveState(); render();
+  });
+}
+
+function openAddRequestSheet(){
+  state.pendingMedia = null;
+  state.pendingTarget = (state.momWatching && state.momWatching!=='all') ? state.momWatching : 'all';
+  document.getElementById('sheetContent').innerHTML = `
+    <div class="sheet-handle"></div>
+    <h3>ابعتيلهم طلب 💌</h3>
+    <div class="field">
+      <label>الطلب لمين؟</label>
+      <div class="chip-row" id="targetChips">
+        <button type="button" class="chip ${state.pendingTarget==='all'?'active':''}" data-target="all">للاتنين</button>
+        <button type="button" class="chip ${state.pendingTarget==='youssef'?'active':''}" data-target="youssef">يوسف</button>
+        <button type="button" class="chip ${state.pendingTarget==='hana'?'active':''}" data-target="hana">هنا</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>الطلب</label>
+      <textarea id="rText" placeholder="مثلا: قدموا فواكه للعمة، أو خدوا بالكوا من الشباك مقفول"></textarea>
+    </div>
+    <div class="time-row">
+      <div class="field"><label>من الساعة (اختياري)</label><input type="time" id="rFrom"/></div>
+      <div class="field"><label>لحد الساعة (اختياري)</label><input type="time" id="rTo"/></div>
+    </div>
+    <div class="field">
+      <label>صورة (اختياري)</label>
+      <div class="media-pick" id="mediaPick">📸 اضغط لإضافة صورة توضح الطلب</div>
+      <input type="file" id="fMedia" accept="image/*,video/*" style="display:none" />
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="cancelSheet">إلغاء</button>
+      <button class="btn primary" id="saveRequest">بعت الطلب 📨</button>
+    </div>
+  `;
+  openSheet();
+  wireMediaPick();
+  document.querySelectorAll('#targetChips .chip').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      document.querySelectorAll('#targetChips .chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      state.pendingTarget = c.dataset.target;
+    });
+  });
+  document.getElementById('cancelSheet').addEventListener('click', closeSheet);
+  document.getElementById('saveRequest').addEventListener('click', ()=>{
+    const text = document.getElementById('rText').value.trim();
+    if(!text) return;
+    const from = document.getElementById('rFrom').value;
+    const to = document.getElementById('rTo').value;
+    const key = state.activeDayKey || todayKey();
+    ensureDay(key);
+    state.requests.push({
+      id: uid(), dateKey:key, text, from, to, targetKid: state.pendingTarget || 'all',
+      mediaType: state.pendingMedia?.type || null,
+      mediaData: state.pendingMedia?.data || null,
+      done:false, createdAt:new Date()
+    });
+    closeSheet(); saveState(); render();
+  });
+}
+
+function wireMediaPick(){
+  const pick = document.getElementById('mediaPick');
+  const input = document.getElementById('fMedia');
+  pick.addEventListener('click', ()=> input.click());
+  input.addEventListener('change', ()=>{
+    const file = input.files[0];
+    if(!file) return;
+    const type = file.type.startsWith('video') ? 'video' : 'image';
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      state.pendingMedia = {type, data:reader.result};
+      pick.classList.add('has-media');
+      pick.innerHTML = type==='video' ? `<video src="${reader.result}" controls></video>` : `<img src="${reader.result}"/>`;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function openSheet(){ document.getElementById('sheetOverlay').classList.add('open'); }
+function closeSheet(){ document.getElementById('sheetOverlay').classList.remove('open'); }
+document.getElementById('sheetOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='sheetOverlay') closeSheet();
+});
+
+/* ---------------- Mom / observer screen ---------------- */
+function momWatchSwitcher(){
+  return `<div class="watch-switch">
+    <button data-watch="youssef" class="${state.momWatching==='youssef'?'active':''}">👦 يوسف</button>
+    <button data-watch="hana" class="${state.momWatching==='hana'?'active':''}">👧 هنا</button>
+    <button data-watch="all" class="${state.momWatching==='all'?'active':''}">الاتنين مع بعض</button>
+  </div>`;
+}
+
+function momScreen(){
+  if(!state.momWatching){
+    return `
+    ${storageBanner()}
+    <div class="role-screen" style="padding-top:20px;">
+      <div class="display" style="font-size:26px;">مين عايزة تراقبي الأول؟ 👀</div>
+      <p class="lead">تقدري تغيري وقت ما تحبي من فوق</p>
+      <div class="role-cards">
+        <div class="role-card" data-watch="youssef"><div class="emoji">👦</div><div><h3>يوسف</h3></div></div>
+        <div class="role-card" data-watch="hana"><div class="emoji">👧</div><div><h3>هنا</h3></div></div>
+        <div class="role-card" data-watch="all"><div class="emoji">👫</div><div><h3>الاتنين مع بعض</h3></div></div>
+      </div>
+    </div>`;
+  }
+  const lastY = state.lastSeen && state.lastSeen.youssef;
+  const lastH = state.lastSeen && state.lastSeen.hana;
+  const lastSeenLine = `<div class="notice-banner soft">${lastY?`👦 آخر ظهور يوسف: ${fmtTime(new Date(lastY))}`:'👦 يوسف لسه ما فتحش'} · ${lastH?`👧 آخر ظهور هنا: ${fmtTime(new Date(lastH))}`:'👧 هنا لسه ما فتحتش'}</div>`;
+
+  if(state.dayOrder.length===0){
+    return `${storageBanner()}${momWatchSwitcher()}${lastSeenLine}<div class="empty"><div class="e">🕊️</div><p>لسه مفيش نشاطات اتسجلت</p></div>
+    <div class="fab-row"><button class="fab secondary" id="addReqBtn">💌 ابعت طلب</button></div>`;
+  }
+  const key = state.activeDayKey || state.dayOrder[state.dayOrder.length-1];
+  const dayEntries = state.entries.filter(e=> e.dateKey===key && (state.momWatching==='all' || e.loggedBy===state.momWatching));
+  const dayRequests = state.requests.filter(r=>r.dateKey===key);
+  const items = [...dayEntries.map(e=>({...e,_type:'entry'})), ...dayRequests.map(r=>({...r,_type:'request'}))]
+      .sort((a,b)=> (a.start||a.createdAt) - (b.start||b.createdAt));
+
+  return `
+  ${storageBanner()}
+  ${momWatchSwitcher()}
+  ${lastSeenLine}
+  <div class="ticket">
+    <div class="ticket-top">
+      <div class="display">${dayLabel(key)}</div>
+      <div class="ticket-date">${dayDate(key).toLocaleDateString('ar-EG',{weekday:'long', day:'numeric', month:'long'})}</div>
+    </div>
+    <div class="perforation"></div>
+    <div class="day-tabs">
+      ${state.dayOrder.map(k=>`<button data-day="${k}" class="${k===key?'active':''}">${dayLabel(k)}</button>`).join('')}
+    </div>
+  </div>
+  ${items.length ? `<div class="timeline">${items.map(it=>renderKidItem(it,true)).join('')}</div>` :
+    `<div class="empty"><div class="e">🌤️</div><p>مفيش حاجة اتسجلت في اليوم ده</p></div>`}
+  <div class="fab-row">
+    <button class="fab secondary" id="addReqBtn">💌 ابعت طلب</button>
+  </div>`;
+}
+
+function attachMomEvents(){
+  document.querySelectorAll('[data-watch]').forEach(el=>{
+    el.addEventListener('click', ()=>{ state.momWatching = el.dataset.watch; saveState(); render(); });
+  });
+  document.querySelectorAll('.day-tabs [data-day]').forEach(el=>{
+    el.addEventListener('click', ()=>{ state.activeDayKey = el.dataset.day; render(); });
+  });
+  document.querySelectorAll('[data-req]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const r = state.requests.find(x=>x.id===el.dataset.req);
+      if(r){ r.done = !r.done; saveState(); render(); }
+    });
+  });
+  const addReqBtn = document.getElementById('addReqBtn');
+  if(addReqBtn) addReqBtn.addEventListener('click', openAddRequestSheet);
+}
+
+/* ---------------- Hidden settings: edit / delete (password protected) ---------------- */
+const APP_PASSWORD = '13579';
+
+function openSettingsSheet(){
+  document.getElementById('sheetContent').innerHTML = `
+    <div class="sheet-handle"></div>
+    <h3>🔒 الإعدادات</h3>
+    <div class="field">
+      <label>اكتب الباسورد</label>
+      <input type="password" id="pwInput" inputmode="numeric" placeholder="•••••" />
+    </div>
+    <div class="pw-error" id="pwError">باسورد غلط، حاول تاني</div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="cancelSheet2">إلغاء</button>
+      <button class="btn primary" id="pwSubmit">دخول</button>
+    </div>
+  `;
+  openSheet();
+  const submit = ()=>{
+    const val = document.getElementById('pwInput').value;
+    if(val === APP_PASSWORD){ refreshManage(); }
+    else{ document.getElementById('pwError').style.display='block'; }
+  };
+  document.getElementById('cancelSheet2').addEventListener('click', closeSheet);
+  document.getElementById('pwSubmit').addEventListener('click', submit);
+  document.getElementById('pwInput').addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+}
+
+function allItemsSorted(){
+  return [...state.entries.map(e=>({...e,_type:'entry'})), ...state.requests.map(r=>({...r,_type:'request'}))]
+    .sort((a,b)=> (a.start||a.createdAt) - (b.start||b.createdAt));
+}
+
+function manageListHTML(){
+  const items = allItemsSorted();
+  const rows = items.map(it=>{
+    const title = it._type==='entry' ? it.title : ('طلب: '+it.text);
+    const sub = dayLabel(it.dateKey)+' · '+fmtTime(new Date(it.start||it.createdAt));
+    return `<div class="manage-row">
+      <div class="manage-info"><div class="manage-title">${esc(title)}</div><div class="manage-sub">${sub}</div></div>
+      <div class="manage-actions">
+        <button class="mini-btn" data-edit="${it.id}" data-type="${it._type}">✏️</button>
+        <button class="mini-btn danger" data-del="${it.id}" data-type="${it._type}">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+  return `
+    <div class="sheet-handle"></div>
+    <h3>إدارة النشاطات ⚙️</h3>
+    ${items.length ? `<div class="manage-list">${rows}</div>` : `<p style="font-size:13px;color:var(--ink-soft);text-align:center;padding:20px 0;">مفيش حاجة اتسجلت لسه</p>`}
+    <div class="sheet-actions" style="margin-top:14px;">
+      <button class="btn ghost" id="closeManage">قفل</button>
+      ${items.length ? `<button class="btn" id="deleteAllBtn" style="background:var(--brick);color:#fff;">امسح كل حاجة 🗑️</button>` : ''}
+    </div>
+  `;
+}
+
+function refreshManage(){
+  document.getElementById('sheetContent').innerHTML = manageListHTML();
+  wireManagePanel();
+}
+
+function wireManagePanel(){
+  document.getElementById('closeManage').addEventListener('click', ()=>{ closeSheet(); render(); });
+  document.querySelectorAll('[data-edit]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      if(b.dataset.type==='entry') openEditEntry(b.dataset.edit); else openEditRequest(b.dataset.edit);
+    });
+  });
+  document.querySelectorAll('[data-del]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      if(b.dataset.type==='entry') state.entries = state.entries.filter(x=>x.id!==b.dataset.del);
+      else state.requests = state.requests.filter(x=>x.id!==b.dataset.del);
+      saveState(); refreshManage();
+    });
+  });
+  const delAllBtn = document.getElementById('deleteAllBtn');
+  if(delAllBtn){
+    let confirming = false;
+    delAllBtn.addEventListener('click', ()=>{
+      if(!confirming){ confirming = true; delAllBtn.textContent = 'متأكد؟ دوس تاني هتتمسح كل حاجة'; return; }
+      state.entries = []; state.requests = []; state.dayOrder = []; state.dayMeta = {}; state.activeDayKey = null;
+      saveState(); closeSheet(); render();
+    });
+  }
+}
+
+function openEditEntry(id){
+  const e = state.entries.find(x=>x.id===id);
+  if(!e) return;
+  document.getElementById('sheetContent').innerHTML = `
+    <div class="sheet-handle"></div>
+    <h3>تعديل النشاط ✏️</h3>
+    <div class="field"><label>اسم النشاط</label><input type="text" id="eTitle" value="${esc(e.title)}"/></div>
+    <div class="field"><label>تفاصيل</label><textarea id="eNote">${esc(e.note||'')}</textarea></div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="backToManage">رجوع</button>
+      <button class="btn primary" id="saveEdit">حفظ</button>
+    </div>
+  `;
+  document.getElementById('backToManage').addEventListener('click', refreshManage);
+  document.getElementById('saveEdit').addEventListener('click', ()=>{
+    const t = document.getElementById('eTitle').value.trim();
+    if(!t) return;
+    e.title = t; e.note = document.getElementById('eNote').value.trim();
+    saveState(); refreshManage();
+  });
+}
+
+function openEditRequest(id){
+  const r = state.requests.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('sheetContent').innerHTML = `
+    <div class="sheet-handle"></div>
+    <h3>تعديل الطلب ✏️</h3>
+    <div class="field"><label>الطلب</label><textarea id="eText">${esc(r.text)}</textarea></div>
+    <div class="time-row">
+      <div class="field"><label>من الساعة</label><input type="time" id="eFrom" value="${r.from||''}"/></div>
+      <div class="field"><label>لحد الساعة</label><input type="time" id="eTo" value="${r.to||''}"/></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="backToManage">رجوع</button>
+      <button class="btn primary" id="saveEdit">حفظ</button>
+    </div>
+  `;
+  document.getElementById('backToManage').addEventListener('click', refreshManage);
+  document.getElementById('saveEdit').addEventListener('click', ()=>{
+    const t = document.getElementById('eText').value.trim();
+    if(!t) return;
+    r.text = t; r.from = document.getElementById('eFrom').value; r.to = document.getElementById('eTo').value;
+    saveState(); refreshManage();
+  });
+}
+
+/* ---------------- Persistence (Firebase Realtime Database — يشتغل برا Claude، على GitHub Pages أو أي استضافة) ---------------- */
+/* 🔧 لازم تعبي البيانات دي من Firebase Console بتاعك قبل ما ترفع الملف. راجع الشرح في الرسالة. */
+const firebaseConfig = {
+  apiKey: "AIzaSyAhj4kc5fsfu7Qnm1k8AFMSy8Ve31V2YM8",
+  databaseURL: "https://rehla-rs-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "rehla-rs"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const dbRef = db.ref(STORAGE_KEY);
+
+function serializeState(){
+  return {
+    entries: state.entries.map(e=>({...e, start: e.start ? e.start.toISOString() : null, end: e.end ? e.end.toISOString() : null})),
+    requests: state.requests.map(r=>({...r, createdAt: r.createdAt ? r.createdAt.toISOString() : null})),
+    dayOrder: state.dayOrder,
+    dayMeta: Object.fromEntries(Object.entries(state.dayMeta).map(([k,v])=>[k, {date: v.date.toISOString()}])),
+    activeDayKey: state.activeDayKey,
+    lastSeen: state.lastSeen,
+    momWatching: state.momWatching
+  };
+}
+
+function saveState(){
+  try{
+    dbRef.set(serializeState());
+    state.storageOK = true;
+  }catch(err){ state.storageOK = false; }
+}
+
+function hydrateState(data){
+  state.entries = (data.entries||[]).map(e=>({...e, start: e.start ? new Date(e.start) : null, end: e.end ? new Date(e.end) : null}));
+  state.requests = (data.requests||[]).map(r=>({...r, createdAt: r.createdAt ? new Date(r.createdAt) : new Date()}));
+  state.dayOrder = data.dayOrder || [];
+  state.dayMeta = Object.fromEntries(Object.entries(data.dayMeta||{}).map(([k,v])=>[k, {date: new Date(v.date)}]));
+  state.activeDayKey = data.activeDayKey || null;
+  state.lastSeen = data.lastSeen || { youssef:null, hana:null, mom:null };
+  state.momWatching = data.momWatching || null;
+}
+
+/* بيسمع لأي تغيير يحصل من أي جهاز تاني ويحدّث الشاشة فورًا - تزامن حي حقيقي */
+dbRef.on('value', (snapshot)=>{
+  const data = snapshot.val();
+  if(data) hydrateState(data);
+  state.storageOK = true;
+  state.loaded = true;
+  render();
+}, (err)=>{
+  state.storageOK = false;
+  state.loaded = true;
+  render();
+});
+</script>
+</body>
+</html>
